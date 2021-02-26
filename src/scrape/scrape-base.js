@@ -10,11 +10,15 @@ async function prepareResults(scraperId, scraperName, scraperResult, combineInst
         company: scraperName,
         account: account.accountNumber,
         dateMoment: moment(txn.date),
+        processedDate: moment(txn.processedDate),
         payee: txn.description,
         status: txn.status,
         amount: txn.type !== 'installments' || !combineInstallments ? txn.chargedAmount : txn.originalAmount,
-        installment: txn.installments ? txn.installments.number : null,
+        installment: txn.installments ? `${txn.installments.number} of ${txn.installments.total}` : null,
         total: txn.installments ? txn.installments.total : null,
+        notes: txn.memo,
+        transactionId: txn.identifier,
+        type: txn.type,
       };
     });
 
@@ -56,6 +60,7 @@ export default async function (scraperId, credentials, options) {
 
   console.log(`success: ${scraperResult.success}`);
   if (!scraperResult.success) {
+    console.log(scraperResult);
     console.log(`error type: ${scraperResult.errorType}`);
     console.log('error:', scraperResult.errorMessage);
     throw new Error(scraperResult.errorMessage);

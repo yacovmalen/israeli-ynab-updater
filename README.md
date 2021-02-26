@@ -48,3 +48,9 @@ You can also scrape in debug mode by running:
 ```bash
 npm run start:debug
 ```
+
+#### Running on Mac
+If running on a mac and you run into the problem of the Puppeteer not finding the chromium, provide the path as an env variable. For example:
+```bash
+PUPPETEER_EXECUTABLE_PATH=/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome npm run start
+```

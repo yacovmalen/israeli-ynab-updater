@@ -1,51 +1,96 @@
 import { parse as objToCsv } from 'json2csv';
 import colors from 'colors/safe';
 import moment from 'moment';
+import lodash from 'lodash';
+import { config } from '../config.js';
 import { DATE_TIME_FORMAT, TRANSACTION_STATUS } from '../constants';
 import { writeFile } from '../helpers/files';
 
 function getReportFields(isSingleReport) {
-  const result = [
+  const columns = [
     {
       label: 'Date',
-      value: (row) => row.dateMoment.format('DD/MM/YYYY'),
+      value: (row) => row.dateMoment.format(config.dateFormat || 'DD/MM/YYYY'),
+      order: 1,
+      display: true,
     },
     {
       label: 'Payee',
       value: 'payee',
+      order: 40,
+      display: true,
     },
     {
       label: 'Inflow',
       value: 'amount',
+      order: 50,
+      display: true,
     },
     {
       label: 'Status',
       value: 'status',
+      order: 60,
+      display: true,
     },
     {
       label: 'Installment',
       value: 'installment',
+      order: 70,
+      display: true,
     },
     {
       label: 'Total',
       value: 'total',
+      order: 80,
+      display: true,
+    },
+    {
+      label: 'Note',
+      value: 'note',
+      order: 90,
+      display: true,
+    },
+    {
+      label: 'Transaction Id',
+      value: 'transactionId',
+      order: 100,
+      display: false,
+    },
+    {
+      label: 'Processed Date',
+      value: 'processedDate',
+      order: 110,
+      display: false,
+    },
+    {
+      label: 'Type',
+      value: 'type',
+      order: 120,
+      display: true,
     },
   ];
 
-  if (isSingleReport) {
-    result.unshift(
+  if (!isSingleReport || config.forceSingleReport ) {
+    columns.unshift(
       {
         label: 'Company',
         value: 'company',
+        order: 20,
+        display: true,
       },
       {
         label: 'Account',
         value: 'account',
+        order: 30,
+        display: true,
       },
     );
   }
 
-  return result;
+  columns = lodash.map(columns, function(item){return lodash.assign(item, lodash.filter(config.columns, (i)=>{return i.value === item.value;})[0] || {});});
+  columns = lodash.union(columns, config.extraColumns);
+
+  return lodash.orderBy(lodash.filter(columns, 'display') , ['order', 'label']);
 }
 
 function filterTransactions(transactions, includeFutureTransactions, includePendingTransactions) {
